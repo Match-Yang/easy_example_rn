@@ -92,7 +92,7 @@ The following will describe how to build your own project based on this project.
 
 ### Copy the source code
 
-Copy the `ZegoExpressManager` folder、 `img` folder and `App.js` files to your typescript project.
+Copy the `ZegoExpressManager` folder、 `img` folder and `App.js` files to your project.
 
 > ![project](media/project.jpg)
 
@@ -148,7 +148,7 @@ createEngine --> onRoomUserUpdate、onRoomUserDeviceUpdate、onRoomTokenWillExpi
 
 Before using any method of the SDK, you need to create an engine instance first. We recommend creating it when the application starts. The sample code is as follows:
 
-```typescript
+```js
 const profile = {
     appID: config.appID,
     scenario: ZegoScenario.General,
@@ -160,7 +160,7 @@ ZegoExpressManager.instance().createEngine(profile);
 
 You can get information in the relevant callbacks and do your own thing.
 
-```typescript
+```js
 ZegoExpressManager.instance().onRoomUserUpdate((updateType, userList, roomID) => {
     // Do something...
 });
@@ -186,7 +186,7 @@ ZegoMediaOptions enumeration can be found in ZegoExpressManager/index.entity.ts.
 
 The following sample code is an example of a call scenario, options can not be passed by default:
 
-```typescript
+```js
 ZegoExpressManager.instance().joinRoom(config.roomID, token, { userID: config.userID, userName: config.userName });
 ```
 
@@ -200,9 +200,12 @@ If your project needs to use the video communication function, you need to set t
 <ZegoTextureView ref={this.zegoPreviewViewRef}/>
 ```
 
-```typescript
+```js
+...
 this.zegoPreviewViewRef = React.createRef();
-ZegoExpressManager.instance().setLocalVideoView(findNodeHandle(this.zegoPreviewViewRef.current));
+...
+ZegoExpressManager.instance().setLocalVideoView(findNodeHandle(this.zegoPreviewViewRef.current),
+);
 ```
 
 **setRemoteVideoView:**
@@ -211,17 +214,23 @@ ZegoExpressManager.instance().setLocalVideoView(findNodeHandle(this.zegoPreviewV
 <ZegoTextureView ref={this.zegoPlayViewRef}/>
 ```
 
-```typescript
+```js
 ZegoExpressManager.instance().onRoomUserUpdate(
-    (updateType: ZegoUpdateType, userList: string[], roomID: string) => {
-        userList.forEach(userID => {
-            if (updateType === ZegoUpdateType.Add) {
-                ZegoExpressManager.instance().setRemoteVideoView(
-                userID,
-                findNodeHandle(this.zegoPlayViewRef.current));
-            }
+  (updateType, userList, roomID) => {
+    console.warn('out roomUserUpdate', updateType, userList, roomID);
+    userList.forEach(userID => {
+      if (updateType === ZegoUpdateType.Add) {
+        this.setState({showPlay: true}, () => {
+          ZegoExpressManager.instance().setRemoteVideoView(
+            userID,
+            findNodeHandle(this.zegoPlayViewRef.current),
+          );
         });
-    }
+      } else {
+        this.setState({showPlay: false});
+      }
+    });
+  },
 );
 ```
 
@@ -229,6 +238,6 @@ ZegoExpressManager.instance().onRoomUserUpdate(
 
 When you want to leave the room, you can call the leaveroom interface.
 
-```typescript
+```js
 ZegoExpressManager.instance().leaveRoom();
 ```
